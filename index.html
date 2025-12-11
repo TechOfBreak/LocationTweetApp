@@ -1,146 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>現在地ツイートツール</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <title>現在地ツイートツール</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<!-- OGP -->
-<meta property="og:title" content="現在地ツイートツール">
-<meta property="og:description" content="ワンタップで現在地をXに投稿できるツール">
-<meta property="og:image" content="https://example.com/ogp.jpg">
-<meta property="og:type" content="website">
+    <!-- OGP -->
+    <meta property="og:title" content="現在地ツイートツール" />
+    <meta property="og:description" content="ワンタップで現在地をXに投稿" />
+    <meta property="og:image" content="https://example.com/ogp.jpg" />
+    <meta property="og:type" content="website" />
 
-<!-- Leaflet 地図 -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<style>
-    body {
-        font-family: 'Segoe UI', Arial, sans-serif;
-        background: #f5f6fa;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 480px;
-    }
-
-    .card {
-        background: white;
-        padding: 20px;
-        border-radius: 18px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        text-align: center;
-    }
-
-    h2 {
-        margin-bottom: 16px;
-        color: #333;
-    }
-
-    button {
-        padding: 14px 20px;
-        font-size: 18px;
-        background: #1d9bf0;
-        color: white;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        width: 100%;
-        transition: 0.2s;
-    }
-    button:hover {
-        background: #0d8ae8;
-    }
-
-    #status {
-        margin-top: 12px;
-        font-size: 15px;
-        color: #666;
-    }
-
-    /* 地図 */
-    #map {
-        margin-top: 15px;
-        width: 100%;
-        height: 260px;
-        border-radius: 16px;
-        overflow: hidden;
-        display: none;
-    }
-
-</style>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-<div class="container">
-    <div class="card">
-        <h2>現在地をツイートする</h2>
-        <button id="btn">現在地を取得</button>
-        <div id="status"></div>
-        <div id="map"></div>
+    <div class="container">
+        <div class="card">
+            <h2>現在地をツイートする</h2>
+            <button id="btn">現在地を取得</button>
+            <div id="status"></div>
+            <div id="map"></div>
+        </div>
     </div>
-</div>
 
-<script>
-const statusEl = document.getElementById("status");
-const mapEl = document.getElementById("map");
-let map;
-
-function initMap(lat, lon) {
-    mapEl.style.display = "block";
-    map = L.map('map').setView([lat, lon], 14);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-    }).addTo(map);
-
-    L.marker([lat, lon]).addTo(map)
-        .bindPopup('現在地')
-        .openPopup();
-}
-
-document.getElementById("btn").onclick = async () => {
-    statusEl.textContent = "位置情報を取得しています…";
-
-    if (!navigator.geolocation) {
-        statusEl.textContent = "ブラウザが位置情報に対応していません。";
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-
-        initMap(lat, lon);
-
-        statusEl.textContent = "住所を取得しています…";
-
-        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ja`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const a = data.address;
-        const prefecture = a.state || a.region || "";
-        const city = a.city || a.town || a.village || a.municipality || "";
-        const ward = a.suburb || a.county || "";
-
-        const locationText = `${prefecture} ${city}${ward ? " " + ward : ""}`;
-
-        const tweetText = `自分は現在、${locationText} にいます！\nhttps://www.temp.net/現在地つーる`;
-        const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-
-        statusEl.textContent = "ツイート画面を開きました！";
-        window.open(tweetUrl, "_blank");
-
-    }, () => {
-        statusEl.textContent = "位置情報の取得に失敗しました。";
-    });
-};
-</script>
+    <script src="script.js"></script>
 </body>
 </html>
